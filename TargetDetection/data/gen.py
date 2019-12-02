@@ -6,7 +6,7 @@
 import os
 import random
 
-XIBase = '/home/lida/python_work/py_project/test/'
+XIBase = os.getcwd()
 
 core_list = []
 coreless_list = []
@@ -23,7 +23,7 @@ random.shuffle(core_list)
 random.shuffle(coreless_list)
 
 # 分割
-train_ratio = 0.8  # 20% 测试集
+train_ratio = 1  # 20% 测试集
 core_train, core_test = core_list[:int(len(core_list)*train_ratio)],\
     core_list[int(len(core_list)*train_ratio):]
 coreless_train, coreless_test = coreless_list[:int(len(coreless_list)*train_ratio)],\

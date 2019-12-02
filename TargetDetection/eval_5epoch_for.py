@@ -1,3 +1,4 @@
+#! -*- coding:utf-8 -*-
 """Adapted from:
     @longcw faster_rcnn_pytorch: https://github.com/longcw/faster_rcnn_pytorch
     @rbgirshick py-faster-rcnn https://github.com/rbgirshick/py-faster-rcnn
@@ -8,6 +9,7 @@ from __future__ import print_function
 
 import argparse
 import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 import os.path as osp
 import pickle
 import shutil
@@ -57,7 +59,7 @@ parser.add_argument('--confidence_threshold', default=0.2, type=float,
                     help='Detection confidence threshold')
 parser.add_argument('--top_k', default=5, type=int,
                     help='Further restrict the number of predictions to parse')
-parser.add_argument('--cuda', default=False, type=str2bool,
+parser.add_argument('--cuda', default=True, type=str2bool,
                     help='Use cuda to train model')
 parser.add_argument('--SIXray_root', default=SIXray_ROOT,
                     help='Location of VOC root directory')
@@ -122,7 +124,7 @@ def parse_rec(filename, imgpath):
     img = cv2.imread(imgpath)
     height, width, channels = img.shape
 
-    with open(filename, "r", encoding='utf-8') as f1:
+    with open(filename.encode('utf-8'), "r", encoding='utf-8') as f1:
         dataread = f1.readlines()
         for annotation in dataread:
             obj_struct = {}
@@ -186,7 +188,7 @@ def write_voc_results_file(all_boxes, dataset):
     for cls_ind, cls in enumerate(labelmap):
         # print('Writing {:s} VOC results file'.format(cls))
         filename = get_voc_results_file_template(set_type, cls)
-        with open(filename, 'wt') as f:
+        with open(filename.encode('utf-8'), 'wt') as f:
             for im_ind, index in enumerate(dataset.ids):
                 dets = all_boxes[cls_ind + 1][im_ind]
                 if dets == []:
@@ -216,7 +218,7 @@ def do_python_eval(output_dir='output', use_07=False):
             filename, annopath, imgpath, args.imagesetfile, cls, cachedir,
             ovthresh=0.2, use_07_metric=use_07_metric)
         aps += [ap]
-        with open(os.path.join(output_dir, cls + '_pr.pkl'), 'wb') as f:
+        with open(os.path.join(output_dir, str(cls.encode('utf-8')) + '_pr.pkl'), 'wb') as f:
             pickle.dump({'rec': rec, 'prec': prec, 'ap': ap}, f)
     print("EPOCH, {:d}, mAP, {:.4f}, core_AP, {:.4f}, coreless_AP, {:.4f}".format(
         EPOCH, np.mean(aps), aps[0], aps[1]))
@@ -326,7 +328,7 @@ def voc_eval(detpath,
     
     # 预测结果读取
     detfile = detpath.format(classname)
-    with open(detfile, 'r') as f:
+    with open(detfile.encode('utf-8'), 'r') as f:
         lines = f.readlines()
     if any(lines) == 1:
         splitlines = [x.strip().split(' ') for x in lines]
@@ -439,7 +441,7 @@ def test_net(save_folder, net, cuda, dataset, transform, top_k,
             print('评估{:4}/{}完成'.format(i+1, num_images))
 
     # 将预测结果保存到文件中
-    with open(det_file, 'wb') as f:
+    with open(det_file.encode('utf-8'), 'wb') as f:
         pickle.dump(all_boxes, f, pickle.HIGHEST_PROTOCOL)
     # with open(det_file, 'rb') as f:
     #     all_boxes = pickle.load(f)
@@ -477,7 +479,7 @@ def reset_args(EPOCH):
 
 
 if __name__ == '__main__':
-    EPOCHS = [1900]
+    EPOCHS = [45700]
     print(EPOCHS)
 
     for EPOCH in EPOCHS:
@@ -487,7 +489,7 @@ if __name__ == '__main__':
         num_classes = len(labelmap) + 1  # +a1 for background
         net = build_ssd('test', 300, num_classes)  # initialize SSD
         # 加载模型参数
-        net.load_state_dict(torch.load(args.trained_model, map_location='cpu'))
+        net.load_state_dict(torch.load(args.trained_model))
 
         # 加载数据
         dataset = SIXrayDetection(args.SIXray_root, args.imagesetfile,

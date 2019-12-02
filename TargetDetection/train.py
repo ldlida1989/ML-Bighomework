@@ -3,6 +3,7 @@ import os
 import sys
 import time
 
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
@@ -41,7 +42,7 @@ parser.add_argument('--start_iter', default=0, type=int,
                     help='Resume training at this iter')
 parser.add_argument('--num_workers', default=4, type=int,
                     help='Number of workers used in dataloading')
-parser.add_argument('--cuda', default=False, type=str2bool,
+parser.add_argument('--cuda', default=True, type=str2bool,
                     help='Use CUDA to train model')
 parser.add_argument('--lr', '--learning-rate', default=1e-4, type=float,
                     help='initial learning rate')
@@ -77,7 +78,7 @@ def train():
     cfg = {
         'num_classes': 3,  # 带电芯 不带电芯 背景
         'lr_steps': (1000, 5000),
-        'max_iter': 12000,
+        'max_iter': 50000,
         'feature_maps': [38, 19, 10, 5, 3, 1],
         'min_dim': 300,
         'steps': [8, 16, 32, 64, 100, 300],
@@ -100,7 +101,6 @@ def train():
     # 构造网络
     ssd_net = build_ssd('train', cfg['min_dim'], cfg['num_classes'])
     net = ssd_net
-
     if args.cuda:
         net = torch.nn.DataParallel(ssd_net)
         cudnn.benchmark = True
@@ -113,7 +113,6 @@ def train():
         vgg_weights = torch.load(args.save_folder + args.basenet)
         print('Loading base network...')
         ssd_net.vgg.load_state_dict(vgg_weights)
-
     if args.cuda:
         net = net.cuda()
 
@@ -155,7 +154,7 @@ def train():
                                   pin_memory=True)
     # create batch iterator
     # EPOCHS = [x for x in range(145, 205, 5)]
-    EPOCHS = [x for x in range(100, 10200, 200)]
+    EPOCHS = [x for x in range(100, 50000, 200)]
     batch_iterator = iter(data_loader)
     for iteration in range(args.start_iter, cfg['max_iter']):
         if args.visdom and iteration != 0 and (iteration % epoch_size == 0):
@@ -190,9 +189,12 @@ def train():
         out = net(images)
 
         # backprop
+	
+        
         optimizer.zero_grad()
         loss_l, loss_c = criterion(out, targets)
         loss = loss_l + loss_c
+        loss = loss.float()
         loss.backward()
         optimizer.step()
         t1 = time.time()

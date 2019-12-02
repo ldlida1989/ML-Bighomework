@@ -25,7 +25,7 @@ SIXray_CLASSES = (
     '带电芯充电宝', '不带电芯充电宝'
 )
 # note: if you used our download scripts, this should be right
-SIXray_ROOT = "/home/lida/python_work/py_project/train/"
+SIXray_ROOT = "/home/vis/work/liyongbo/ML-Bighomework/TargetDetection/data/train_data"
 
 
 class SIXrayAnnotationTransform(object):
