@@ -69,7 +69,7 @@ parser.add_argument('--imagesetfile',
                     default="data/sub_test_core_coreless.txt", type=str,
                     help='imageset file path to open')
 args = parser.parse_args()
-
+print('----------*****---------', args.SIXray_root)
 # 使用cuda
 if torch.cuda.is_available():
     if args.cuda:
@@ -479,7 +479,7 @@ def reset_args(EPOCH):
 
 
 if __name__ == '__main__':
-    EPOCHS = [45700]
+    EPOCHS = [49300]
     print(EPOCHS)
 
     for EPOCH in EPOCHS:

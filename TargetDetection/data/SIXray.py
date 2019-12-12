@@ -126,7 +126,8 @@ class SIXrayDetection(data.Dataset):
                  image_sets,
                  transform=None, target_transform=SIXrayAnnotationTransform(),
                  dataset_name='SIXray'):
-        self.root = SIXray_ROOT
+        # self.root = SIXray_ROOT
+        self.root = root
         self.image_set = image_sets
         self.transform = transform
         self.target_transform = target_transform
